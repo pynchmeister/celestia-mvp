@@ -7,10 +7,32 @@ import { msgTypes } from './registry';
 import { IgniteClient } from "../client"
 import { MissingWalletError } from "../helpers"
 import { Api } from "./rest";
+import { MsgCreatePost } from "./types/blog/blog/tx";
+import { MsgUploadW3S } from "./types/blog/blog/tx";
 
 
-export {  };
+export { MsgCreatePost, MsgUploadW3S };
 
+type sendMsgCreatePostParams = {
+  value: MsgCreatePost,
+  fee?: StdFee,
+  memo?: string
+};
+
+type sendMsgUploadW3SParams = {
+  value: MsgUploadW3S,
+  fee?: StdFee,
+  memo?: string
+};
+
+
+type msgCreatePostParams = {
+  value: MsgCreatePost,
+};
+
+type msgUploadW3SParams = {
+  value: MsgUploadW3S,
+};
 
 
 export const registry = new Registry(msgTypes);
@@ -30,6 +52,50 @@ export const txClient = ({ signer, prefix, addr }: TxClientOptions = { addr: "ht
 
   return {
 		
+		async sendMsgCreatePost({ value, fee, memo }: sendMsgCreatePostParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgCreatePost: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
+				let msg = this.msgCreatePost({ value: MsgCreatePost.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendMsgCreatePost: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		async sendMsgUploadW3S({ value, fee, memo }: sendMsgUploadW3SParams): Promise<DeliverTxResponse> {
+			if (!signer) {
+					throw new Error('TxClient:sendMsgUploadW3S: Unable to sign Tx. Signer is not present.')
+			}
+			try {			
+				const { address } = (await signer.getAccounts())[0]; 
+				const signingClient = await SigningStargateClient.connectWithSigner(addr,signer,{registry, prefix});
+				let msg = this.msgUploadW3S({ value: MsgUploadW3S.fromPartial(value) })
+				return await signingClient.signAndBroadcast(address, [msg], fee ? fee : defaultFee, memo)
+			} catch (e: any) {
+				throw new Error('TxClient:sendMsgUploadW3S: Could not broadcast Tx: '+ e.message)
+			}
+		},
+		
+		
+		msgCreatePost({ value }: msgCreatePostParams): EncodeObject {
+			try {
+				return { typeUrl: "/blog.blog.MsgCreatePost", value: MsgCreatePost.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgCreatePost: Could not create message: ' + e.message)
+			}
+		},
+		
+		msgUploadW3S({ value }: msgUploadW3SParams): EncodeObject {
+			try {
+				return { typeUrl: "/blog.blog.MsgUploadW3S", value: MsgUploadW3S.fromPartial( value ) }  
+			} catch (e: any) {
+				throw new Error('TxClient:MsgUploadW3S: Could not create message: ' + e.message)
+			}
+		},
 		
 	}
 };

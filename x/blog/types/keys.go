@@ -12,6 +12,14 @@ const (
 
 	// MemStoreKey defines the in-memory store key
 	MemStoreKey = "mem_blog"
+
+	// Keep track of the index of posts
+	PostKey      = "Post/value/"
+	PostCountKey = "Post/count/"
+
+	// Keep track of the index of uploads
+    UploadKey      = "Upload/value/"
+    UploadCountKey = "Upload/count/"
 )
 
 func KeyPrefix(p string) []byte {

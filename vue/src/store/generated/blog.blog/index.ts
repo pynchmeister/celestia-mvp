@@ -1,9 +1,11 @@
 import { Client, registry, MissingWalletError } from 'blog-client-ts'
 
 import { Params } from "blog-client-ts/blog.blog/types"
+import { Post } from "blog-client-ts/blog.blog/types"
+import { Upload } from "blog-client-ts/blog.blog/types"
 
 
-export { Params };
+export { Params, Post, Upload };
 
 function initClient(vuexGetters) {
 	return new Client(vuexGetters['common/env/getEnv'], vuexGetters['common/wallet/signer'])
@@ -35,9 +37,12 @@ function getStructure(template) {
 const getDefaultState = () => {
 	return {
 				Params: {},
+				Posts: {},
 				
 				_Structure: {
 						Params: getStructure(Params.fromPartial({})),
+						Post: getStructure(Post.fromPartial({})),
+						Upload: getStructure(Upload.fromPartial({})),
 						
 		},
 		_Registry: registry,
@@ -71,6 +76,12 @@ export default {
 						(<any> params).query=null
 					}
 			return state.Params[JSON.stringify(params)] ?? {}
+		},
+				getPosts: (state) => (params = { params: {}}) => {
+					if (!(<any> params).query) {
+						(<any> params).query=null
+					}
+			return state.Posts[JSON.stringify(params)] ?? {}
 		},
 				
 		getTypeStructure: (state) => (type) => {
@@ -129,6 +140,84 @@ export default {
 		
 		
 		
+		
+		 		
+		
+		
+		async QueryPosts({ commit, rootGetters, getters }, { options: { subscribe, all} = { subscribe:false, all:false}, params, query=null }) {
+			try {
+				const key = params ?? {};
+				const client = initClient(rootGetters);
+				let value= (await client.BlogBlog.query.queryPosts(query ?? undefined)).data
+				
+					
+				while (all && (<any> value).pagination && (<any> value).pagination.next_key!=null) {
+					let next_values=(await client.BlogBlog.query.queryPosts({...query ?? {}, 'pagination.key':(<any> value).pagination.next_key} as any)).data
+					value = mergeResults(value, next_values);
+				}
+				commit('QUERY', { query: 'Posts', key: { params: {...key}, query}, value })
+				if (subscribe) commit('SUBSCRIBE', { action: 'QueryPosts', payload: { options: { all }, params: {...key},query }})
+				return getters['getPosts']( { params: {...key}, query}) ?? {}
+			} catch (e) {
+				throw new Error('QueryClient:QueryPosts API Node Unavailable. Could not perform query: ' + e.message)
+				
+			}
+		},
+		
+		
+		async sendMsgCreatePost({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const client=await initClient(rootGetters)
+				const result = await client.BlogBlog.tx.sendMsgCreatePost({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreatePost:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgCreatePost:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		async sendMsgUploadW3S({ rootGetters }, { value, fee = [], memo = '' }) {
+			try {
+				const client=await initClient(rootGetters)
+				const result = await client.BlogBlog.tx.sendMsgUploadW3S({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUploadW3S:Init Could not initialize signing client. Wallet is required.')
+				}else{
+					throw new Error('TxClient:MsgUploadW3S:Send Could not broadcast Tx: '+ e.message)
+				}
+			}
+		},
+		
+		async MsgCreatePost({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BlogBlog.tx.msgCreatePost({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgCreatePost:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgCreatePost:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgUploadW3S({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BlogBlog.tx.msgUploadW3S({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUploadW3S:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgUploadW3S:Create Could not create message: ' + e.message)
+				}
+			}
+		},
 		
 	}
 }
