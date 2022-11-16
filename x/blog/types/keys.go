@@ -18,8 +18,8 @@ const (
 	PostCountKey = "Post/count/"
 
 	// Keep track of the index of uploads
-    UploadKey      = "Upload/value/"
-    UploadCountKey = "Upload/count/"
+	UploadKey      = "Upload/value/"
+	UploadCountKey = "Upload/count/"
 )
 
 func KeyPrefix(p string) []byte {

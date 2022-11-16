@@ -3,6 +3,7 @@ import _m0 from "protobufjs/minimal";
 import { PageRequest, PageResponse } from "../../cosmos/base/query/v1beta1/pagination";
 import { Params } from "./params";
 import { Post } from "./post";
+import { Upload } from "./upload";
 
 export const protobufPackage = "blog.blog";
 
@@ -29,6 +30,19 @@ export interface QueryPostsResponse {
   /** Returning a list of posts */
   Post: Post[];
   /** Adding pagination to response */
+  pagination: PageResponse | undefined;
+}
+
+export interface QueryUploadsRequest {
+  pagination: PageRequest | undefined;
+}
+
+export interface QueryUploadsResponse {
+  /**
+   * string title = 1;
+   * string content = 2;
+   */
+  Upload: Upload[];
   pagination: PageResponse | undefined;
 }
 
@@ -235,12 +249,129 @@ export const QueryPostsResponse = {
   },
 };
 
+function createBaseQueryUploadsRequest(): QueryUploadsRequest {
+  return { pagination: undefined };
+}
+
+export const QueryUploadsRequest = {
+  encode(message: QueryUploadsRequest, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    if (message.pagination !== undefined) {
+      PageRequest.encode(message.pagination, writer.uint32(26).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryUploadsRequest {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryUploadsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 3:
+          message.pagination = PageRequest.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryUploadsRequest {
+    return { pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined };
+  },
+
+  toJSON(message: QueryUploadsRequest): unknown {
+    const obj: any = {};
+    message.pagination !== undefined
+      && (obj.pagination = message.pagination ? PageRequest.toJSON(message.pagination) : undefined);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryUploadsRequest>, I>>(object: I): QueryUploadsRequest {
+    const message = createBaseQueryUploadsRequest();
+    message.pagination = (object.pagination !== undefined && object.pagination !== null)
+      ? PageRequest.fromPartial(object.pagination)
+      : undefined;
+    return message;
+  },
+};
+
+function createBaseQueryUploadsResponse(): QueryUploadsResponse {
+  return { Upload: [], pagination: undefined };
+}
+
+export const QueryUploadsResponse = {
+  encode(message: QueryUploadsResponse, writer: _m0.Writer = _m0.Writer.create()): _m0.Writer {
+    for (const v of message.Upload) {
+      Upload.encode(v!, writer.uint32(10).fork()).ldelim();
+    }
+    if (message.pagination !== undefined) {
+      PageResponse.encode(message.pagination, writer.uint32(34).fork()).ldelim();
+    }
+    return writer;
+  },
+
+  decode(input: _m0.Reader | Uint8Array, length?: number): QueryUploadsResponse {
+    const reader = input instanceof _m0.Reader ? input : new _m0.Reader(input);
+    let end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryUploadsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1:
+          message.Upload.push(Upload.decode(reader, reader.uint32()));
+          break;
+        case 4:
+          message.pagination = PageResponse.decode(reader, reader.uint32());
+          break;
+        default:
+          reader.skipType(tag & 7);
+          break;
+      }
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryUploadsResponse {
+    return {
+      Upload: Array.isArray(object?.Upload) ? object.Upload.map((e: any) => Upload.fromJSON(e)) : [],
+      pagination: isSet(object.pagination) ? PageResponse.fromJSON(object.pagination) : undefined,
+    };
+  },
+
+  toJSON(message: QueryUploadsResponse): unknown {
+    const obj: any = {};
+    if (message.Upload) {
+      obj.Upload = message.Upload.map((e) => e ? Upload.toJSON(e) : undefined);
+    } else {
+      obj.Upload = [];
+    }
+    message.pagination !== undefined
+      && (obj.pagination = message.pagination ? PageResponse.toJSON(message.pagination) : undefined);
+    return obj;
+  },
+
+  fromPartial<I extends Exact<DeepPartial<QueryUploadsResponse>, I>>(object: I): QueryUploadsResponse {
+    const message = createBaseQueryUploadsResponse();
+    message.Upload = object.Upload?.map((e) => Upload.fromPartial(e)) || [];
+    message.pagination = (object.pagination !== undefined && object.pagination !== null)
+      ? PageResponse.fromPartial(object.pagination)
+      : undefined;
+    return message;
+  },
+};
+
 /** Query defines the gRPC querier service. */
 export interface Query {
   /** Parameters queries the parameters of the module. */
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse>;
   /** Queries a list of Posts items. */
   Posts(request: QueryPostsRequest): Promise<QueryPostsResponse>;
+  /** Queries a list of Uploads items. */
+  Uploads(request: QueryUploadsRequest): Promise<QueryUploadsResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -249,6 +380,7 @@ export class QueryClientImpl implements Query {
     this.rpc = rpc;
     this.Params = this.Params.bind(this);
     this.Posts = this.Posts.bind(this);
+    this.Uploads = this.Uploads.bind(this);
   }
   Params(request: QueryParamsRequest): Promise<QueryParamsResponse> {
     const data = QueryParamsRequest.encode(request).finish();
@@ -260,6 +392,12 @@ export class QueryClientImpl implements Query {
     const data = QueryPostsRequest.encode(request).finish();
     const promise = this.rpc.request("blog.blog.Query", "Posts", data);
     return promise.then((data) => QueryPostsResponse.decode(new _m0.Reader(data)));
+  }
+
+  Uploads(request: QueryUploadsRequest): Promise<QueryUploadsResponse> {
+    const data = QueryUploadsRequest.encode(request).finish();
+    const promise = this.rpc.request("blog.blog.Query", "Uploads", data);
+    return promise.then((data) => QueryUploadsResponse.decode(new _m0.Reader(data)));
   }
 }
 

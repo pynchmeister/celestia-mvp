@@ -8,6 +8,7 @@ import "blog/blog/params.proto";
 // this line is used by starport scaffolding # 1
 
 import "blog/blog/post.proto";
+import "blog/blog/upload.proto";
 
 option go_package = "blog/x/blog/types";
 
@@ -20,6 +21,11 @@ service Query {
   // Queries a list of Posts items.
 	rpc Posts(QueryPostsRequest) returns (QueryPostsResponse) {
 		option (google.api.http).get = "/blog/blog/posts";
+	}
+
+// Queries a list of Uploads items.
+	rpc Uploads(QueryUploadsRequest) returns (QueryUploadsResponse) {
+		option (google.api.http).get = "/blog/blog/uploads";
 	}
 
 // this line is used by starport scaffolding # 2
@@ -48,6 +54,18 @@ message QueryPostsResponse {
 
   // Adding pagination to response
   cosmos.base.query.v1beta1.PageResponse pagination = 2;
+}
+
+message QueryUploadsRequest {
+cosmos.base.query.v1beta1.PageRequest pagination = 3;
+}
+
+message QueryUploadsResponse {
+ // string title = 1;
+ // string content = 2;
+  repeated Upload Upload = 1;
+
+  cosmos.base.query.v1beta1.PageResponse pagination = 4;
 }
 
 // this line is used by starport scaffolding # 3

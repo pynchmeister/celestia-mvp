@@ -58,6 +58,34 @@ export interface BlogQueryPostsResponse {
   pagination?: V1Beta1PageResponse;
 }
 
+export interface BlogQueryUploadsResponse {
+  /**
+   * string title = 1;
+   * string content = 2;
+   */
+  Upload?: BlogUpload[];
+
+  /**
+   * PageResponse is to be embedded in gRPC response messages where the
+   * corresponding request message has used PageRequest.
+   *
+   *  message SomeResponse {
+   *          repeated Bar results = 1;
+   *          PageResponse page = 2;
+   *  }
+   */
+  pagination?: V1Beta1PageResponse;
+}
+
+export interface BlogUpload {
+  creator?: string;
+
+  /** @format uint64 */
+  id?: string;
+  title?: string;
+  content?: string;
+}
+
 export interface ProtobufAny {
   "@type"?: string;
 }
@@ -302,6 +330,32 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   ) =>
     this.request<BlogQueryPostsResponse, RpcStatus>({
       path: `/blog/blog/posts`,
+      method: "GET",
+      query: query,
+      format: "json",
+      ...params,
+    });
+
+  /**
+   * No description
+   *
+   * @tags Query
+   * @name QueryUploads
+   * @summary Queries a list of Uploads items.
+   * @request GET:/blog/blog/uploads
+   */
+  queryUploads = (
+    query?: {
+      "pagination.key"?: string;
+      "pagination.offset"?: string;
+      "pagination.limit"?: string;
+      "pagination.count_total"?: boolean;
+      "pagination.reverse"?: boolean;
+    },
+    params: RequestParams = {},
+  ) =>
+    this.request<BlogQueryUploadsResponse, RpcStatus>({
+      path: `/blog/blog/uploads`,
       method: "GET",
       query: query,
       format: "json",
