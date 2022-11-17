@@ -29,7 +29,7 @@ func (k msgServer) UploadW3S(goCtx context.Context, msg *types.MsgUploadW3S) (*t
 
 	cid, err := c.Put(ctx, f)
 	if err != nil {
-		panic(err)
+		fmt.Printf("https://.ipfs.io/ipfs/%s\n", cid)
 	}
 
 	fmt.Println(cid)
@@ -41,7 +41,7 @@ func (k msgServer) UploadW3S(goCtx context.Context, msg *types.MsgUploadW3S) (*t
 		Content: msg.Content,
 	}
 
-	// Add a post to the store and get back the ID (CID?)
+	// Add a upload to the store and get back the ID (CID?)
 	id := k.AppendUpload(ctx, upload)
 
 	// TODO: Handling the message

@@ -198,19 +198,6 @@ export default {
 		},
 		
 		
-		async sendMsgUploadW3S({ rootGetters }, { value, fee = [], memo = '' }) {
-			try {
-				const client=await initClient(rootGetters)
-				const result = await client.BlogBlog.tx.sendMsgUploadW3S({ value, fee: {amount: fee, gas: "200000"}, memo })
-				return result
-			} catch (e) {
-				if (e == MissingWalletError) {
-					throw new Error('TxClient:MsgUploadW3S:Init Could not initialize signing client. Wallet is required.')
-				}else{
-					throw new Error('TxClient:MsgUploadW3S:Send Could not broadcast Tx: '+ e.message)
-				}
-			}
-		},
 		async sendMsgCreatePost({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
 				const client=await initClient(rootGetters)
@@ -224,20 +211,20 @@ export default {
 				}
 			}
 		},
-		
-		async MsgUploadW3S({ rootGetters }, { value }) {
+		async sendMsgUploadW3S({ rootGetters }, { value, fee = [], memo = '' }) {
 			try {
-				const client=initClient(rootGetters)
-				const msg = await client.BlogBlog.tx.msgUploadW3S({value})
-				return msg
+				const client=await initClient(rootGetters)
+				const result = await client.BlogBlog.tx.sendMsgUploadW3S({ value, fee: {amount: fee, gas: "200000"}, memo })
+				return result
 			} catch (e) {
 				if (e == MissingWalletError) {
 					throw new Error('TxClient:MsgUploadW3S:Init Could not initialize signing client. Wallet is required.')
-				} else{
-					throw new Error('TxClient:MsgUploadW3S:Create Could not create message: ' + e.message)
+				}else{
+					throw new Error('TxClient:MsgUploadW3S:Send Could not broadcast Tx: '+ e.message)
 				}
 			}
 		},
+		
 		async MsgCreatePost({ rootGetters }, { value }) {
 			try {
 				const client=initClient(rootGetters)
@@ -248,6 +235,19 @@ export default {
 					throw new Error('TxClient:MsgCreatePost:Init Could not initialize signing client. Wallet is required.')
 				} else{
 					throw new Error('TxClient:MsgCreatePost:Create Could not create message: ' + e.message)
+				}
+			}
+		},
+		async MsgUploadW3S({ rootGetters }, { value }) {
+			try {
+				const client=initClient(rootGetters)
+				const msg = await client.BlogBlog.tx.msgUploadW3S({value})
+				return msg
+			} catch (e) {
+				if (e == MissingWalletError) {
+					throw new Error('TxClient:MsgUploadW3S:Init Could not initialize signing client. Wallet is required.')
+				} else{
+					throw new Error('TxClient:MsgUploadW3S:Create Could not create message: ' + e.message)
 				}
 			}
 		},
